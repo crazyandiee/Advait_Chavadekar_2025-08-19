@@ -8,58 +8,6 @@ This is a self‑contained FastAPI app that solves the take‑home:
 - /get_report?report_id=... returns "Running" or the CSV when complete
 - Computes uptime/downtime inside business hours using UTC<->local conversion
 
-Quick Start (Mac/Windows/Linux)
--------------------------------
-1) Python 3.10+ recommended.
-2) Create a virtual env and install deps:
-   python -m venv .venv && source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
-   pip install -r requirements.txt  (see bottom of file for list)
-   (If you don't have requirements.txt, just: pip install fastapi uvicorn sqlalchemy python-multipart pydantic)
-
-3) Download the zip from the prompt, extract to ./data/ so you have:
-   ./data/status.csv               (columns: store_id,timestamp_utc,status)
-   ./data/business_hours.csv       (columns: store_id,dayOfWeek,start_time_local,end_time_local)
-   ./data/timezones.csv            (columns: store_id,timezone_str)
-
-   Notes:
-   - All timestamps in status.csv are in UTC ISO format.
-   - dayOfWeek: 0=Monday ... 6=Sunday
-   - If a store has NO rows in business_hours.csv, we assume 24x7.
-   - If timezone missing for a store, default America/Chicago.
-
-4) Load data to DB and run server (first run auto‑ingests if DB empty):
-   uvicorn main:app --reload
-
-5) Trigger a report:
-   curl -X POST http://127.0.0.1:8000/trigger_report
-   -> {"report_id":"<id>"}
-
-6) Poll for completion:
-   curl "http://127.0.0.1:8000/get_report?report_id=<id>"
-   If running: {"status":"Running"}
-   If done: returns CSV file (text/csv) with columns:
-   store_id,uptime_last_hour(d_mins),uptime_last_day(h_hrs),uptime_last_week(h_hrs),downtime_last_hour(d_mins),downtime_last_day(h_hrs),downtime_last_week(h_hrs)
-
-CSV is also saved to ./reports/<id>.csv
-
-Design & Assumptions (documented in code below)
------------------------------------------------
-- Polls are roughly hourly; to convert sparse polls to continuous time we use a step function:
-  "last observation carried forward (LOCF)" between poll timestamps.
-- If there is no observation at/before a subinterval start, we assume INACTIVE until the first observation.
-- Business hours windows are computed in local store time, then converted to UTC and intersected with the report windows.
-- If a store has at least one business hours row, times outside those rows are considered CLOSED (ignored). If the store has no rows, it is open 24x7.
-- "Current time" is fixed to the max timestamp present in status.csv, as requested.
-
-Ideas to Improve (for README)
------------------------------
-- Replace LOCF with a gap‑aware model (e.g., cap carry‑forward at 2h; beyond that mark unknown).
-- Add unit/integration tests; property tests for tricky DST days.
-- Batch computations with SQL window functions for speed.
-- Support S3/GCS ingestion; CDC to keep DB warm.
-- Paginated CSV or Parquet output; signed URL download.
-- Observability: metrics for data gaps, per‑store health, processing time.
-
 """
 from __future__ import annotations
 
@@ -526,3 +474,4 @@ def get_report(report_id: str = Query(...)):
 # pydantic
 # python-multipart
 # backports.zoneinfo ; python_version < '3.9'
+
