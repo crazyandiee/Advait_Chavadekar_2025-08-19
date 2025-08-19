@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-multipart
+backports.zoneinfo ; python_version < '3.9'
