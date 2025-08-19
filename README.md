@@ -79,8 +79,22 @@ If completed:
   "report": "store_id,uptime_last_hour(in minutes),..."
 }
 
+## 📊 Reports
+
+Generated reports are stored in the [`reports/`](./reports) folder.  
+
+For example, [report.csv](./reports/report.csv) shows a sample output generated from the provided dataset:
+
+```csv
+store_id,uptime_last_hour(in minutes),uptime_last_day(in hours),uptime_last_week(in hours),downtime_last_hour(in minutes),downtime_last_day(in hours),downtime_last_week(in hours)
+1,45,22.5,140,15,1.5,28
+2,60,24,168,0,0,0
+
+
 📂 Project Structure
 loop-store-monitoring/
 │── main.py            # FastAPI app, all logic inside
 │── requirements.txt   # Dependencies
 │── README.md          # Documentation
+│── reports/
+│    └── report.csv
