@@ -465,13 +465,3 @@ def get_report(report_id: str = Query(...)):
         return PlainTextResponse(content, media_type="text/csv")
 
 
-# ----------------------
-# Minimal requirements.txt (copy this block to a file named requirements.txt)
-# ----------------------
-# fastapi
-# uvicorn
-# sqlalchemy
-# pydantic
-# python-multipart
-# backports.zoneinfo ; python_version < '3.9'
-
